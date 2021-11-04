@@ -18,6 +18,8 @@ const StoreProvider = ({ value = [], ...props }) => {
     //  which wraps it around the useReducer() Hook from React
     const [state, dispatch] = useProductReducer({
       products: [],
+      cart: [],
+      cartOpen: false,
       categories: [],
       currentCategory: '',
     });

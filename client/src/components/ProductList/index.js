@@ -8,8 +8,10 @@ import spinner from '../../assets/spinner.gif';
 import { useStoreContext } from '../../utils/GlobalState';
 import { UPDATE_PRODUCTS } from '../../utils/actions';
 
+import { idbPromise } from "../../utils/helpers";
+
 function ProductList() {
-  // retrieve current global state object and the dipatch() method to update state
+  // retrieve current global state object and the dispatch() method to update state
   const [state, dispatch] = useStoreContext();
   // destructure the currentCategory data from state object to use in the filterProducts() function
   const { currentCategory } = state;
@@ -18,14 +20,30 @@ function ProductList() {
 
   // implement useEffect() Hook in order to wait for our async useQuery() response to come in
   useEffect(() => {
-    // once there's an actual value for data, execute dispatch() instructing reducer() that it's the UPDATE_PRODUCTS action and it should save the array of product data to our global store
+    // if there's data to be stored, execute dispatch() instructing reducer() that it's the UPDATE_PRODUCTS action and it should save the array of product data to our global store
     if (data) {
+      // store it in the global state object
       dispatch({
         type: UPDATE_PRODUCTS,
         products: data.products
       });
+
+      // but let's also take each product and save it to IndexedDB using the helper function 
+      data.products.forEach((product) => {
+        idbPromise('products', 'put', product);
+      });
+      // add else if to check if `loading` is undefined in `useQuery()` Hook
+    } else if (!loading) {
+      // since we're offline, get all of the data from the `products` store
+      idbPromise('products', 'get').then((products) => {
+        // use retrieved data to set global state for offline browsing
+        dispatch({
+          type: UPDATE_PRODUCTS,
+          products: products
+        });
+      });
     }
-  }, [data, dispatch]);
+  }, [data, loading, dispatch]);
 
   // When it's done, useStoreContext() executes again, giving us the product data needed display products to the page
   function filterProducts() {

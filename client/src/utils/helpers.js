@@ -44,7 +44,7 @@ export function idbPromise(storeName, method, object) {
       switch (method) {
         // run the .put() method on the object store, overwriting any data with the matching _id value from the object and adding it if it can't find a match
         //  Both put & get methods will return the data to whenever we call this idbPromise() 
-        case 'put':
+        case 'put': // works in a find-or-create fashion: if it doesn't find the data to update, it will simply add that data
           store.put(object);
           resolve(object);
           break;
